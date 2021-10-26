@@ -1,0 +1,27 @@
+stages:      
+  - build
+  - test
+
+build-job:
+  rules:
+    - changes:
+       - index.html
+  stage: build
+  script:
+    - echo "Запускаем контейнер с nginx и скармливаем ему измененный index.html"
+    - docker run --name my-nginx-for-test-sheshukov -d -p 9996:80 nginx
+    - docker cp index.html my-nginx-for-test-sheshukov:/usr/share/nginx/html
+    - sleep 5
+
+chech-stage:
+  rules:
+    - changes:
+       - index.html
+  stage: test
+  script:
+    - echo 'Стадия тестов, при провале отправляется сообщение в телеграмм'
+    - if curl -Is localhost:9996 | grep -q 200; then echo 'Код ответа 200, все ок';else sh ci-notify.sh ❌; exit 1 ; fi
+    - if [ "`curl -s localhost:9996 | md5sum | awk '{ print $1 }'`" == "`md5sum index.html | awk '{ print $1 }'`" ]; then echo 'md5 сумма совпадает ';else sh ci-notify.sh ❌ ; exit 1; fi
+  after_script:
+    - echo 'Удаляем контейнер, так как он нам больше не нужон'
+    - docker rm -f my-nginx-for-test-sheshukov
