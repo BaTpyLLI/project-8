@@ -10,7 +10,7 @@ build-job:
   script:
     - echo "Запускаем контейнер с nginx и скармливаем ему измененный index.html"
     - docker run --name my-nginx-for-test-sheshukov -d -p 9996:80 nginx
-    - docker cp index.html my-nginx-for-test-sheshukov:/usr/share/nginx/html
+#    - docker cp index.html my-nginx-for-test-sheshukov:/usr/share/nginx/html
     - sleep 5
 
 chech-stage:
